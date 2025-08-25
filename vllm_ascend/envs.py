@@ -159,6 +159,9 @@ env_variables: Dict[str, Callable[[], Any]] = {
     #   1: enable moe all2all seq.
     "VLLM_ASCEND_ENABLE_MOE_ALL2ALL_SEQ":
     lambda: bool(int(os.getenv('VLLM_ASCEND_ENABLE_MOE_ALL2ALL_SEQ', '0'))),
+    # FlashComm optimization: Enable v1 and v2 by setting this flag to 1 or 2 respectively
+    "VLLM_ASCEND_ENABLE_FLASHCOMM":
+    lambda: int(os.getenv("VLLM_ASCEND_ENABLE_FLASHCOMM", '0')),
 }
 
 # end-env-vars-definition

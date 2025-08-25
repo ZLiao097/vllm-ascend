@@ -16,6 +16,9 @@ def register_model():
     ModelRegistry.register_model(
         "DeepSeekMTPModel",
         "vllm_ascend.models.deepseek_mtp:CustomDeepSeekMTP")
+    
+    ModelRegistry.register_model(
+        "Qwen2ForCausalLM", "vllm_ascend.models.qwen2:CustomQwen2ForCausalLM")
 
     ModelRegistry.register_model(
         "Qwen2VLForConditionalGeneration",
