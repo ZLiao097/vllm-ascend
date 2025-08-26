@@ -191,7 +191,7 @@ class CustomQwen2DecoderLayer(nn.Module):
         if flashcomm_v1_enabled:
             hidden_states = maybe_pad_and_reduce_scatter(
                 hidden_states, pad_size)
-        elif not envs.VLLM_ASCEND_ENABLE_MATMUL_ALLREDUCE:
+        elif not ascend_envs.VLLM_ASCEND_ENABLE_MATMUL_ALLREDUCE:
             hidden_states = tensor_model_parallel_all_reduce(hidden_states)
         # Fully Connected
         hidden_states, residual = self.post_attention_layernorm(
@@ -202,7 +202,7 @@ class CustomQwen2DecoderLayer(nn.Module):
         if flashcomm_v1_enabled:
             hidden_states = maybe_pad_and_reduce_scatter(
                 hidden_states, pad_size)
-        elif not envs.VLLM_ASCEND_ENABLE_MATMUL_ALLREDUCE:
+        elif not ascend_envs.VLLM_ASCEND_ENABLE_MATMUL_ALLREDUCE:
             hidden_states = tensor_model_parallel_all_reduce(hidden_states)
         return hidden_states, residual
 
