@@ -276,6 +276,10 @@ class NPUModelRunner(LoRAModelRunnerMixin):
             self.sampler = Sampler()
         self.reorder_batch_threshold: Optional[int] = None
 
+        self.q = None
+        self._async_sampling_exp_stream = torch.npu.Stream()
+        self._async_sampling_exp_event = torch.npu.Event()
+
         # Lazy initialization, these will be set after __init__
         self.kv_caches: List[torch.Tensor] = []
         self.attn_groups: list[list[AttentionGroup]] = []
