@@ -1932,6 +1932,21 @@ class NPUModelRunner(LoRAModelRunnerMixin):
                                            uniform_decode=uniform_decode)
         aclgraph_runtime_mode, batch_descriptor = \
             self.aclgraph_dispatcher.dispatch(batch_descriptor)
+        
+        default_stream = torch.npu.current_stream()
+        with torch.npu.Stream(self._async_sampling_exp_stream):
+            self._async_sampling_exp_stream.wait_stream(default_stream)
+            b_s = logits_indices.shape[0]
+            # head_dim = 151936 #vocab_size for qwen3_8b
+            head_dim = self.model_config.get_vocab_size() #通过model_config.get_vocab_size获取
+            self.q = torch.empty((b_s, head_dim), device='npu', dtype=torch.float32)
+            generators = self.input_batch.sampling_metadata.generators
+            if len(generators) != self.q.shape[0]:
+                self.q.exponential_()
+            if generators:
+                for i, generator in generators.items():
+                    self.q[i].exponential_(generator=generator)
+            self._async_sampling_exp_event.record()
 
         # Run forward pass
         with ProfileExecuteDuration().capture_async("forward"):
@@ -2017,6 +2032,8 @@ class NPUModelRunner(LoRAModelRunnerMixin):
                 sampler_output = self.sampler(
                     logits=logits,
                     sampling_metadata=sampling_metadata,
+                    q=self.q,
+                    exp_event=self._async_sampling_exp_event,
                 )
             else:
                 if lmhead_tp_enable() and logits is not None:
@@ -2031,6 +2048,8 @@ class NPUModelRunner(LoRAModelRunnerMixin):
                 sampler_output = self.sampler(
                     logits=bonus_logits,
                     sampling_metadata=sampling_metadata,
+                    q=self.q,
+                    exp_event=self._async_sampling_exp_event,
                 )
                 bonus_token_ids = sampler_output.sampled_token_ids
 
