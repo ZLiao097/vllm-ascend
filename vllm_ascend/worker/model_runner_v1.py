@@ -1938,7 +1938,7 @@ class NPUModelRunner(LoRAModelRunnerMixin):
             self.aclgraph_dispatcher.dispatch(batch_descriptor)
         
         default_stream = torch.npu.current_stream()
-        with torch.npu.Stream(self._async_sampling_exp_stream):
+        with torch.npu.stream(self._async_sampling_exp_stream):
             self._async_sampling_exp_stream.wait_stream(default_stream)
             b_s = logits_indices.shape[0]
             # head_dim = 151936 #vocab_size for qwen3_8b
